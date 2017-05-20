@@ -1,13 +1,17 @@
 import RPi.GPIO as GPIO
-import subprocess, shlex, time, logging, sys, traceback, smtplib, ConfigParser, ast, os
+import subprocess, shlex, time, logging, sys, traceback, smtplib, ast, os
 from datetime import datetime
 from email.message import Message 
+try:
+    import ConfigParser as ConfigParser
+except:
+    import configparser as ConfigParser
 
 setup_path = os.getcwd() + '/setup.conf'
 config = ConfigParser.RawConfigParser()
 config.read(setup_path)
 
-log_path = os.getcwd() + config.get('main', 'log_path').replace('\'', '') + datetime.strftime(datetime.now(), '%Y-%m-%d_%H:%M:%S.%f') + '.log'
+log_path = os.getcwd() + config.get('main', 'log_path') + datetime.strftime(datetime.now(), '%Y-%m-%d_%H:%M:%S.%f') + '.log'
 log_format = config.get('main', 'log_format')
 logging.basicConfig(filename=log_path, format=log_format)
 logger = logging.getLogger()
@@ -35,7 +39,7 @@ def mail(service):
         smtpserver.sendmail(mail_user, send_to, message.as_string())
     smtpserver.quit()
 
-check_local_net = subprocess.call(shlex.split("ping -c 1 8.8.8.8"), stdout=subprocess.PIPE)
+check_local_net = subprocess.check_call(shlex.split("ping -c 1 8.8.8.8"), stdout=subprocess.PIPE)
 if check_local_net != 0:
     loggin.info('Watch dog is not connecting to internet, quit scan procedure.')
     sys.exit(0)
